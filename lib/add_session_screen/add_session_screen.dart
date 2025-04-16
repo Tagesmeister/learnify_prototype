@@ -6,7 +6,7 @@ import '../add_session_dynamic_screen.dart';
 import '../Data/ContainerListViewGenerate.dart';
 
 class AddSessionScreen extends StatefulWidget {
-  const AddSessionScreen({Key? key}) : super(key: key);
+  const AddSessionScreen({super.key});
 
   @override
   State<AddSessionScreen> createState() => _AddSessionScreenState();
@@ -70,7 +70,7 @@ class _AddSessionScreenState extends State<AddSessionScreen>
               // Navigiere zum "Add Session Dynamic"-Screen
               await Navigator.of(
                 context,
-              ).push(_createSwipeRouteUp(const AddSessionDynamic(true)));
+              ).push(_createSwipeRouteUp(const AddSessionDynamic(true, "")));
               // Nach dem Zurückkehren werden die Daten neu geladen
               await _refreshLocalData();
             },
@@ -81,7 +81,7 @@ class _AddSessionScreenState extends State<AddSessionScreen>
         itemCount: list.length,
         itemBuilder: (context, index) {
           return ReorderableDragStartListener(
-            key: ValueKey(list[index]['id'] ?? index),
+            key: ValueKey('$index-${list[index].subject}'),
             index: index,
             // Erstelle das Listenelement anhand der übergebenen Daten
             child: Containerlistviewgenerate.createDynamicSessionsListCustom(

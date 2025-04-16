@@ -1,29 +1,16 @@
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:learnify_prototype/Data/SessionModel.dart';
 import 'package:learnify_prototype/add_session_screen/Observer/I_observer.dart';
 import 'dart:developer' as developer;
 
-final box = Hive.box('HiveDB');
+final box = Hive.box<SessionModel>('sessions');
 
 class DataHandler {
   late List<Observer> observers = [];
 
   /// Speichert die übergebenen Daten in der Hive-Box.
-  static Future<void> storeDatainHive(
-    String subject,
-    DateTime date,
-    List<String> sourceString,
-    List<int?> sourceInt,
-    DateTime plannedTime,
-    bool isBook,
-  ) async {
-    await box.add({
-      'subject': subject,
-      'date': date.toIso8601String(),
-      'plannedTime': plannedTime.toIso8601String(),
-      'sourceString': sourceString,
-      'sourceInt': sourceInt,
-      'isBook': isBook,
-    });
+  static Future<void> storeDatainHive(SessionModel sessionModel) async {
+    await box.add(sessionModel);
 
     final allEntries = box.toMap();
     developer.log(
@@ -58,5 +45,11 @@ class DataHandler {
     for (var o in observers) {
       o.update();
     }
+  }
+
+  static SessionModel getCurrentSession(String id) {
+    var list = box.values.toList();
+    var currentSession = list.where((x) => x.id == id).toList();
+    return currentSession[0];
   }
 }

@@ -35,7 +35,7 @@ class Containerlistviewgenerate {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${dataAccess['subject']}',
+                  '${dataAccess.subject}',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -57,9 +57,11 @@ class Containerlistviewgenerate {
               IconButton(
                 icon: Icon(Icons.edit, color: Colors.green.shade800),
                 onPressed: () {
-                  Navigator.of(
-                    context,
-                  ).push(_createSwipeRouteLeft(AddSessionDynamic(false)));
+                  Navigator.of(context).push(
+                    _createSwipeRouteLeft(
+                      AddSessionDynamic(false, dataAccess.id),
+                    ),
+                  );
                 },
               ),
             ],
@@ -73,11 +75,11 @@ class Containerlistviewgenerate {
   /// Anstatt per String-Manipulation wird hier versucht, den DateTime-String zu parsen.
   static String prepairTime(dynamic dataAccess) {
     try {
-      DateTime planned = DateTime.parse(dataAccess['plannedTime']);
+      DateTime planned = DateTime.parse(dataAccess.plannedTime);
       return "${planned.hour}:${planned.minute.toString().padLeft(2, '0')}";
     } catch (e) {
       developer.log("Error parsing time: $e", name: 'prepairTime');
-      return dataAccess['plannedTime']?.toString() ?? "";
+      return dataAccess.plannedTime?.toString() ?? "";
     }
   }
 

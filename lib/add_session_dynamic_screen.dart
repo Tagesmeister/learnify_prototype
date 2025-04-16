@@ -1,10 +1,15 @@
+import 'dart:async';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:learnify_prototype/Data/DataHandler.dart';
+import 'package:learnify_prototype/Data/SessionModel.dart';
 
 class AddSessionDynamic extends StatefulWidget {
-  const AddSessionDynamic(this.isSafe, {super.key});
+  const AddSessionDynamic(this.isSave, this.id, {super.key});
 
-  final bool isSafe;
+  final bool isSave;
+  final String id;
 
   @override
   State<AddSessionDynamic> createState() => _AddSessionDynamicState();
@@ -30,6 +35,29 @@ class _AddSessionDynamicState extends State<AddSessionDynamic> {
   void initState() {
     super.initState();
     _dateController.text = _getCurrentDate();
+
+    // Wird Ausgeführt, wenn man am Bearbeiten ist.
+    if (!widget.isSave) {
+      var data = DataHandler.getCurrentSession(widget.id);
+      _subjectController.text = data.subject;
+      var (year, month, day) = getParseDate(data.date);
+
+      _dateController.text = '${year}-${month}-${day}';
+      _timeController.text = data.plannedTime;
+
+      if (data.isBook) {
+        _bookNameController.text = data.sourceString[0];
+        _bookChapterController.text = data.sourceInt[0].toString();
+        _bookPageController.text = data.sourceInt[1].toString();
+      }
+      //Überprüft ob man web als Source in der Daten abgespeichert hat.
+      else if (!data.isBook) {
+        _isBookSelected = false;
+
+        _webNameController.text = data.sourceString[0];
+        _webUrlController.text = data.sourceString[1];
+      }
+    }
   }
 
   @override
@@ -197,31 +225,28 @@ class _AddSessionDynamicState extends State<AddSessionDynamic> {
                 // z.B. 12-4-2025 => "yyyy-MM-dd" Formate
                 // Hier nur als Beispiel:
                 // Wir versuchen ein Datum in Format dd-mm-yyyy
-                final dateParts = dateStr.split('-');
-                final day = int.tryParse(dateParts[0]) ?? 1;
-                final month = int.tryParse(dateParts[1]) ?? 1;
-                final year = int.tryParse(dateParts[2]) ?? 2000;
-                final parsedDate = DateTime(year, month, day);
 
-                // Zeit parsen (z.B. "12:00")
-                final timeParts = timeStr.split(':');
-                final hour = int.tryParse(timeParts[0]) ?? 0;
-                final minute = int.tryParse(timeParts[1]) ?? 0;
-                final parsedTime = DateTime(0, 0, 0, hour, minute);
+                final (day, month, year) = getParseDate(dateStr);
+                final parsedDate = '${day}-${month}-${year}';
+
+                final (hour, minute) = getParseTime(timeStr);
+                final parsedTime = '${hour}:${minute}';
 
                 final bool isBook = _isBookSelected;
 
-                if (widget.isSafe) {
+                SessionModel sessionModel = SessionModel(
+                  subject,
+                  parsedDate,
+                  source,
+                  sourceInt,
+                  parsedTime,
+                  isBook,
+                );
+
+                if (widget.isSave) {
                   // In DB speichern
-                  DataHandler.storeDatainHive(
-                    subject,
-                    parsedDate,
-                    source,
-                    sourceInt,
-                    parsedTime,
-                    isBook,
-                  );
-                  if (widget.isSafe == false) {
+                  DataHandler.storeDatainHive(sessionModel);
+                  if (widget.isSave == false) {
                     //DataHandler.updateDatainHive();------------------------------------------------------------------
                     // https://chatgpt.com/share/67fd9442-788c-8001-9909-d3e1e95a6181
                   }
@@ -241,9 +266,9 @@ class _AddSessionDynamicState extends State<AddSessionDynamic> {
   }
 
   String _getButtonName() {
-    if (widget.isSafe == true) {
+    if (widget.isSave == true) {
       return 'Save';
-    } else if (widget.isSafe == false) {
+    } else if (widget.isSave == false) {
       return 'Update';
     }
 
@@ -292,6 +317,21 @@ class _AddSessionDynamicState extends State<AddSessionDynamic> {
         ],
       ),
     );
+  }
+
+  (int, int, int) getParseDate(String dateStr) {
+    final dateParts = dateStr.split('-');
+    final year = int.tryParse(dateParts[0]) ?? 1;
+    final month = int.tryParse(dateParts[1]) ?? 1;
+    final day = int.tryParse(dateParts[2]) ?? 2000;
+    return (day, month, year);
+  }
+
+  (int, int) getParseTime(String timeStr) {
+    final timeParts = timeStr.split(':');
+    final hour = int.tryParse(timeParts[0]) ?? 0;
+    final minute = int.tryParse(timeParts[1]) ?? 0;
+    return (hour, minute);
   }
 
   /// Beispielmethode, um das aktuelle Datum in Format "dd-mm-yyyy" zurückzugeben.

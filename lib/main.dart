@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:learnify_prototype/Data/SessionModel.dart';
 import 'home.dart';
 import 'statistic_screen.dart';
 import 'add_session_screen/add_session_screen.dart';
@@ -10,7 +11,11 @@ void main() async {
   await Hive.initFlutter();
 
   // Eine Box (so nennt man in Hive Speicherbereiche) öffnen
-  await Hive.openBox('HiveDB');
+  Hive.registerAdapter(SessionModelAdapter());
+
+  //await Hive.deleteBoxFromDisk('sessions');
+
+  await Hive.openBox<SessionModel>('sessions');
   runApp(const MyApp());
 }
 
