@@ -5,10 +5,13 @@ import 'home.dart';
 import 'statistic_screen.dart';
 import 'add_session_screen/add_session_screen.dart';
 
+import 'package:do_not_disturb/do_not_disturb.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Hive initialisieren
+  ensureDndAndActivate();
+
   await Hive.initFlutter();
   Hive.registerAdapter(SessionModelAdapter());
   await Hive.openBox<SessionModel>('sessions');
@@ -16,6 +19,23 @@ void main() async {
   // Notifications initialisieren
 
   runApp(const MyApp());
+}
+
+/// Ruft diese Methode z. B. beim App‑Start oder auf einen Button‑Tap auf.
+Future<void> ensureDndAndActivate() async {
+  final dnd = DoNotDisturbPlugin();
+
+  // 1. Prüfen, ob die App den „Nicht‑Stören‑Zugriff“ schon hat
+  final granted = await dnd.isNotificationPolicyAccessGranted();
+
+  if (!granted) {
+    // Noch nicht gewährt → einmalig in die passende Systemeinstellung springen
+    await dnd.openNotificationPolicyAccessSettings();
+
+    // Hier KEINE weitere Aktion ausführen; der Nutzer muss erst zurückkommen.
+    return;
+  }
+  // https://chatgpt.com/share/68017bb6-1568-800f-87d5-1b44d143b82b ----------------------------------------------------------------------------------
 }
 
 class MyApp extends StatelessWidget {
