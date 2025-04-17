@@ -6,7 +6,7 @@ import 'dart:developer' as developer;
 final box = Hive.box<SessionModel>('sessions');
 
 class DataHandler {
-  late List<Observer> observers = [];
+  static late List<Observer> observers = [];
 
   /// Speichert die übergebenen Daten in der Hive-Box.
   static Future<void> storeDatainHive(SessionModel sessionModel) async {
@@ -29,6 +29,14 @@ class DataHandler {
     return box.length;
   }
 
+  static void updateDatainHive(
+    int index,
+    SessionModel sessionModelCurrentData,
+  ) {
+    box.putAt(index, sessionModelCurrentData);
+    notify();
+  }
+
   List<dynamic> getSessionData() {
     return box.values.toList();
   }
@@ -41,15 +49,18 @@ class DataHandler {
     observers.remove(observer);
   }
 
-  void notify() {
+  static void notify() {
     for (var o in observers) {
       o.update();
     }
   }
 
-  static SessionModel getCurrentSession(String id) {
+  static (SessionModel, int) getCurrentSession(String id) {
     var list = box.values.toList();
     var currentSession = list.where((x) => x.id == id).toList();
-    return currentSession[0];
+
+    var index = list.indexWhere(((x) => x.id == id));
+
+    return (currentSession[0], index);
   }
 }

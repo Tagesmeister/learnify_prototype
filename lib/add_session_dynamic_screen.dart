@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:learnify_prototype/Data/DataHandler.dart';
@@ -31,6 +29,8 @@ class _AddSessionDynamicState extends State<AddSessionDynamic> {
   final TextEditingController _webNameController = TextEditingController();
   final TextEditingController _webUrlController = TextEditingController();
 
+  late int currentSessionIndex;
+
   @override
   void initState() {
     super.initState();
@@ -38,7 +38,9 @@ class _AddSessionDynamicState extends State<AddSessionDynamic> {
 
     // Wird Ausgeführt, wenn man am Bearbeiten ist.
     if (!widget.isSave) {
-      var data = DataHandler.getCurrentSession(widget.id);
+      var (data, index) = DataHandler.getCurrentSession(widget.id);
+      currentSessionIndex = index;
+
       _subjectController.text = data.subject;
       var (year, month, day) = getParseDate(data.date);
 
@@ -246,16 +248,25 @@ class _AddSessionDynamicState extends State<AddSessionDynamic> {
                 if (widget.isSave) {
                   // In DB speichern
                   DataHandler.storeDatainHive(sessionModel);
-                  if (widget.isSave == false) {
-                    //DataHandler.updateDatainHive();------------------------------------------------------------------
-                    // https://chatgpt.com/share/67fd9442-788c-8001-9909-d3e1e95a6181
-                  }
+                  messageUser("saved!");
                 }
+                if (widget.isSave == false) {
+                  SessionModel sessionModelCurrentData = SessionModel(
+                    subject,
+                    parsedDate,
+                    source,
+                    sourceInt,
+                    parsedTime,
+                    isBook,
+                  );
 
-                // Zurück oder Info ausgeben
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text('Saved!')));
+                  DataHandler.updateDatainHive(
+                    currentSessionIndex,
+                    sessionModelCurrentData,
+                  );
+                  messageUser("updated!");
+                  // https://chatgpt.com/share/67fd9442-788c-8001-9909-d3e1e95a6181
+                }
               },
               child: Text(_getButtonName()),
             ),
@@ -273,6 +284,12 @@ class _AddSessionDynamicState extends State<AddSessionDynamic> {
     }
 
     return 'Error';
+  }
+
+  void messageUser(message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('$message')));
   }
 
   /// Hilfsfunktion, um ein einheitliches Container-Layout für Textfelder zu erzeugen.

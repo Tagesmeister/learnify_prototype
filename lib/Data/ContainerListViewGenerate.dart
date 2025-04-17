@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:learnify_prototype/add_session_dynamic_screen.dart';
 
 import 'DataHandler.dart';
-import 'dart:developer' as developer;
 
 class Containerlistviewgenerate {
   static Widget createDynamicSessionsListCustom(
@@ -11,8 +10,6 @@ class Containerlistviewgenerate {
     DataHandler dataHandler,
     BuildContext context,
   ) {
-    String plannedTime = prepairTime(dataAccess);
-
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(12),
@@ -42,7 +39,10 @@ class Containerlistviewgenerate {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(plannedTime, style: TextStyle(color: Colors.grey[700])),
+                Text(
+                  dataAccess.plannedTime,
+                  style: TextStyle(color: Colors.grey[700]),
+                ),
               ],
             ),
           ),
@@ -69,18 +69,6 @@ class Containerlistviewgenerate {
         ],
       ),
     );
-  }
-
-  /// Formatiert die gespeicherte geplante Zeit.
-  /// Anstatt per String-Manipulation wird hier versucht, den DateTime-String zu parsen.
-  static String prepairTime(dynamic dataAccess) {
-    try {
-      DateTime planned = DateTime.parse(dataAccess.plannedTime);
-      return "${planned.hour}:${planned.minute.toString().padLeft(2, '0')}";
-    } catch (e) {
-      developer.log("Error parsing time: $e", name: 'prepairTime');
-      return dataAccess.plannedTime?.toString() ?? "";
-    }
   }
 
   static Route _createSwipeRouteLeft(Widget page) {

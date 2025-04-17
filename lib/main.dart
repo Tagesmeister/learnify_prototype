@@ -7,15 +7,14 @@ import 'add_session_screen/add_session_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   // Hive initialisieren
   await Hive.initFlutter();
-
-  // Eine Box (so nennt man in Hive Speicherbereiche) öffnen
   Hive.registerAdapter(SessionModelAdapter());
-
-  //await Hive.deleteBoxFromDisk('sessions');
-
   await Hive.openBox<SessionModel>('sessions');
+
+  // Notifications initialisieren
+
   runApp(const MyApp());
 }
 
